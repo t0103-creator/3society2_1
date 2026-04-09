@@ -14,6 +14,11 @@
       font-family: 'Noto Sans KR', sans-serif;
     }
 
+    /* 효과음 생성을 위한 Web Audio API 유틸리티 */
+    .sound-effect {
+      display: none;
+    }
+
     .card {
       perspective: 1000px;
       cursor: grab;
@@ -69,7 +74,8 @@
  </head>
  <body class="h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
   <div class="app-wrapper h-full w-full overflow-auto bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
-   <div class="max-w-6xl mx-auto"><!-- 진행 헤더 -->
+   <div class="max-w-6xl mx-auto">
+    <!-- 진행 헤더 -->
     <div class="text-center mb-8">
      <h1 class="text-5xl font-bold text-gray-800 mb-4">권한 분류 마스터</h1>
      <div class="flex justify-center items-center gap-8">
@@ -77,8 +83,7 @@
        <div class="text-sm text-gray-600 mb-1">
         현재 진행
        </div>
-       <div class="text-3xl font-bold text-indigo-600">
-        <span id="current-stage">1단계 1스테이지</span>
+       <div class="text-3xl font-bold text-indigo-600"><span id="current-stage">1단계 1스테이지</span>
        </div>
       </div>
       <div class="text-3xl text-gray-400">
@@ -88,24 +93,21 @@
        <div class="text-sm text-gray-600 mb-1">
         전체 진행도
        </div>
-       <div class="text-3xl font-bold text-purple-600">
-        <span id="overall-progress">1</span>/6
+       <div class="text-3xl font-bold text-purple-600"><span id="overall-progress">1</span>/6
        </div>
       </div>
       <div id="lives-display" class="bg-white rounded-lg shadow-md px-8 py-4 hidden">
        <div class="text-sm text-gray-600 mb-1">
         남은 생명
        </div>
-       <div class="text-3xl font-bold text-red-600">
-        <span id="lives-count">3</span>❤️
+       <div class="text-3xl font-bold text-red-600"><span id="lives-count">3</span>❤️
        </div>
       </div>
       <div id="timer-display" class="bg-white rounded-lg shadow-md px-8 py-4 hidden">
        <div class="text-sm text-gray-600 mb-1">
         남은 시간
        </div>
-       <div class="text-3xl font-bold text-orange-600">
-        <span id="timer">30</span>초
+       <div class="text-3xl font-bold text-orange-600"><span id="timer">30</span>초
        </div>
       </div>
      </div>
@@ -116,30 +118,26 @@
       <p id="game1-instruction" class="text-lg text-gray-600">카드를 드래그하여 올바른 카테고리에 분류하세요!</p>
      </div>
      <div class="mb-8 flex justify-center gap-4">
-      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2">
-       <span class="text-gray-600">진행도:</span> <span id="progress" class="text-2xl font-bold text-indigo-600">0/8</span>
+      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2"><span class="text-gray-600">진행도:</span> <span id="progress" class="text-2xl font-bold text-indigo-600">0/8</span>
       </div>
      </div>
      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
       <div class="lg:col-span-3">
        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-blue-200 min-h-96" data-category="legislative" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(96, 165, 250, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4">
-          <i data-lucide="book-open" style="width: 28px; height: 28px; color: #2563eb;"></i>
+         <div class="flex items-center gap-2 mb-4"><i data-lucide="book-open" style="width: 28px; height: 28px; color: #2563eb;"></i>
           <h3 class="text-xl font-bold text-blue-700">입법에 관한 권한</h3>
          </div>
          <div id="legislative-items" class="space-y-3 min-h-80"></div>
         </div>
         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-green-200 min-h-96" data-category="financial" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(74, 222, 128, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4">
-          <i data-lucide="wallet" style="width: 28px; height: 28px; color: #16a34a;"></i>
+         <div class="flex items-center gap-2 mb-4"><i data-lucide="wallet" style="width: 28px; height: 28px; color: #16a34a;"></i>
           <h3 class="text-xl font-bold text-green-700">재정에 관한 권한</h3>
          </div>
          <div id="financial-items" class="space-y-3 min-h-80"></div>
         </div>
         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-purple-200 min-h-96" data-category="general" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(196, 181, 253, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4">
-          <i data-lucide="briefcase" style="width: 28px; height: 28px; color: #a855f7;"></i>
+         <div class="flex items-center gap-2 mb-4"><i data-lucide="briefcase" style="width: 28px; height: 28px; color: #a855f7;"></i>
           <h3 class="text-xl font-bold text-purple-700">일반 국정에 관한 권한</h3>
          </div>
          <div id="general-items" class="space-y-3 min-h-80"></div>
@@ -152,8 +150,7 @@
       </div>
      </div>
      <div id="completion-message" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-xl p-8 shadow-xl">
-       <i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
+      <div class="bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-xl p-8 shadow-xl"><i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
        <h2 class="text-3xl font-bold mb-4">완벽합니다! 🎉</h2>
        <p class="text-lg mb-6">모든 국회 권한을 올바르게 분류했습니다!</p><button id="next-stage-btn-1" class="bg-white text-green-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다음 스테이지로 진행 <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i> </button>
       </div>
@@ -165,23 +162,20 @@
       <p id="game2-instruction" class="text-lg text-gray-600">카드를 드래그하여 올바른 카테고리에 분류하세요!</p>
      </div>
      <div class="mb-8 flex justify-center gap-4">
-      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2">
-       <span class="text-gray-600">진행도:</span> <span id="progress2" class="text-2xl font-bold text-amber-600">0/6</span>
+      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2"><span class="text-gray-600">진행도:</span> <span id="progress2" class="text-2xl font-bold text-amber-600">0/6</span>
       </div>
      </div>
      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
       <div class="lg:col-span-3">
        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-amber-200 min-h-96" data-category="executive" style="background: linear-gradient(135deg, rgba(217, 119, 6, 0.05) 0%, rgba(251, 191, 36, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4">
-          <i data-lucide="zap" style="width: 28px; height: 28px; color: #d97706;"></i>
+         <div class="flex items-center gap-2 mb-4"><i data-lucide="zap" style="width: 28px; height: 28px; color: #d97706;"></i>
           <h3 class="text-xl font-bold text-amber-700">행정부 수반으로서의 권한</h3>
          </div>
          <div id="executive-items" class="space-y-3 min-h-80"></div>
         </div>
         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-rose-200 min-h-96" data-category="sovereignty" style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.05) 0%, rgba(251, 113, 133, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4">
-          <i data-lucide="crown" style="width: 28px; height: 28px; color: #f43f5e;"></i>
+         <div class="flex items-center gap-2 mb-4"><i data-lucide="crown" style="width: 28px; height: 28px; color: #f43f5e;"></i>
           <h3 class="text-xl font-bold text-rose-700">국가 원수로서의 권한</h3>
          </div>
          <div id="sovereignty-items" class="space-y-3 min-h-80"></div>
@@ -194,8 +188,7 @@
       </div>
      </div>
      <div id="completion-message2" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl p-8 shadow-xl">
-       <i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
+      <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl p-8 shadow-xl"><i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
        <h2 class="text-3xl font-bold mb-4">완벽합니다! 🎉</h2>
        <p class="text-lg mb-6">모든 대통령 권한을 올바르게 분류했습니다!</p><button id="next-stage-btn-2" class="bg-white text-orange-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다음 스테이지로 진행 <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i> </button>
       </div>
@@ -207,8 +200,7 @@
       <p id="game3-instruction" class="text-lg text-gray-600">카드를 드래그하여 올바른 기관에 분류하세요!</p>
      </div>
      <div class="mb-8 flex justify-center gap-4">
-      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2">
-       <span class="text-gray-600">진행도:</span> <span id="progress3" class="text-2xl font-bold text-cyan-600">0/8</span>
+      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2"><span class="text-gray-600">진행도:</span> <span id="progress3" class="text-2xl font-bold text-cyan-600">0/8</span>
       </div>
      </div>
      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
@@ -216,24 +208,20 @@
        <div class="flex flex-col gap-8">
         <div class="flex items-stretch gap-4 justify-center">
          <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-blue-200 min-h-80 flex-1" data-category="first_trial" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(96, 165, 250, 0.05) 100%);">
-          <div class="flex items-center gap-2 mb-4">
-           <i data-lucide="gavel" style="width: 28px; height: 28px; color: #2563eb;"></i>
+          <div class="flex items-center gap-2 mb-4"><i data-lucide="gavel" style="width: 28px; height: 28px; color: #2563eb;"></i>
            <h3 class="text-xl font-bold text-blue-700">1심</h3>
           </div>
           <div id="first_trial-items" class="space-y-3 min-h-64"></div>
          </div>
-         <div class="flex flex-col items-center justify-center gap-2">
-          <i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
+         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
          </div>
          <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-red-200 min-h-80 flex-1" data-category="appeal" style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.05) 0%, rgba(251, 113, 133, 0.05) 100%);">
           <div id="appeal-items" class="space-y-3 min-h-64"></div>
          </div>
-         <div class="flex flex-col items-center justify-center gap-2">
-          <i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
+         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
          </div>
          <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-amber-200 min-h-80 flex-1" data-category="second_trial" style="background: linear-gradient(135deg, rgba(217, 119, 6, 0.05) 0%, rgba(251, 191, 36, 0.05) 100%);">
-          <div class="flex items-center gap-2 mb-4">
-           <i data-lucide="scales" style="width: 28px; height: 28px; color: #d97706;"></i>
+          <div class="flex items-center gap-2 mb-4"><i data-lucide="scales" style="width: 28px; height: 28px; color: #d97706;"></i>
            <h3 class="text-xl font-bold text-amber-700">2심</h3>
           </div>
           <div id="second_trial-items" class="space-y-3 min-h-64"></div>
@@ -241,18 +229,15 @@
         </div>
         <div class="flex items-stretch gap-4 justify-center">
          <div class="flex-1"></div>
-         <div class="flex flex-col items-center justify-center gap-2">
-          <i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
+         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
          </div>
          <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-orange-200 min-h-80 flex-1" data-category="cassation" style="background: linear-gradient(135deg, rgba(251, 146, 60, 0.05) 0%, rgba(253, 186, 116, 0.05) 100%);">
           <div id="cassation-items" class="space-y-3 min-h-64"></div>
          </div>
-         <div class="flex flex-col items-center justify-center gap-2">
-          <i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
+         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
          </div>
          <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-purple-200 min-h-80 flex-1" data-category="third_trial" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(196, 181, 253, 0.05) 100%);">
-          <div class="flex items-center gap-2 mb-4">
-           <i data-lucide="crown" style="width: 28px; height: 28px; color: #a855f7;"></i>
+          <div class="flex items-center gap-2 mb-4"><i data-lucide="crown" style="width: 28px; height: 28px; color: #a855f7;"></i>
            <h3 class="text-xl font-bold text-purple-700">3심</h3>
           </div>
           <div id="third_trial-items" class="space-y-3 min-h-64"></div>
@@ -267,8 +252,7 @@
       </div>
      </div>
      <div id="completion-message3" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-cyan-400 to-blue-500 text-white rounded-xl p-8 shadow-xl">
-       <i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
+      <div class="bg-gradient-to-r from-cyan-400 to-blue-500 text-white rounded-xl p-8 shadow-xl"><i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
        <h2 class="text-3xl font-bold mb-4">완벽합니다! 🎉</h2>
        <p class="text-lg mb-6">모든 사법부 기관을 올바르게 분류했습니다!</p><button id="next-stage-btn-3" class="bg-white text-blue-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다음 단계로 진행 <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i> </button>
       </div>
@@ -280,30 +264,26 @@
       <p id="game4-instruction" class="text-lg text-gray-600">카드를 드래그하여 올바른 카테고리에 분류하세요!</p>
      </div>
      <div class="mb-8 flex justify-center gap-4">
-      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2">
-       <span class="text-gray-600">진행도:</span> <span id="progress4" class="text-2xl font-bold text-indigo-600">0/8</span>
+      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2"><span class="text-gray-600">진행도:</span> <span id="progress4" class="text-2xl font-bold text-indigo-600">0/8</span>
       </div>
      </div>
      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
       <div class="lg:col-span-3">
        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-blue-200 min-h-96" data-category="legislative" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(96, 165, 250, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4">
-          <i data-lucide="book-open" style="width: 28px; height: 28px; color: #2563eb;"></i>
+         <div class="flex items-center gap-2 mb-4"><i data-lucide="book-open" style="width: 28px; height: 28px; color: #2563eb;"></i>
           <h3 class="text-xl font-bold text-blue-700">입법에 관한 권한</h3>
          </div>
          <div id="legislative-items4" class="space-y-3 min-h-80"></div>
         </div>
         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-green-200 min-h-96" data-category="financial" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(74, 222, 128, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4">
-          <i data-lucide="wallet" style="width: 28px; height: 28px; color: #16a34a;"></i>
+         <div class="flex items-center gap-2 mb-4"><i data-lucide="wallet" style="width: 28px; height: 28px; color: #16a34a;"></i>
           <h3 class="text-xl font-bold text-green-700">재정에 관한 권한</h3>
          </div>
          <div id="financial-items4" class="space-y-3 min-h-80"></div>
         </div>
         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-purple-200 min-h-96" data-category="general" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(196, 181, 253, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4">
-          <i data-lucide="briefcase" style="width: 28px; height: 28px; color: #a855f7;"></i>
+         <div class="flex items-center gap-2 mb-4"><i data-lucide="briefcase" style="width: 28px; height: 28px; color: #a855f7;"></i>
           <h3 class="text-xl font-bold text-purple-700">일반 국정에 관한 권한</h3>
          </div>
          <div id="general-items4" class="space-y-3 min-h-80"></div>
@@ -316,15 +296,13 @@
       </div>
      </div>
      <div id="completion-message4" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-xl p-8 shadow-xl">
-       <i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
+      <div class="bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-xl p-8 shadow-xl"><i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
        <h2 class="text-3xl font-bold mb-4">완벽합니다! 🎉</h2>
        <p class="text-lg mb-6">모든 국회 권한을 올바르게 분류했습니다!</p><button id="next-stage-btn-4" class="bg-white text-green-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다음 스테이지로 진행 <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i> </button>
       </div>
      </div>
      <div id="game-over-message4" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-red-400 to-red-600 text-white rounded-xl p-8 shadow-xl">
-       <i data-lucide="x-circle" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
+      <div class="bg-gradient-to-r from-red-400 to-red-600 text-white rounded-xl p-8 shadow-xl"><i data-lucide="x-circle" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
        <h2 class="text-3xl font-bold mb-4">게임 오버! 😢</h2>
        <p class="text-lg mb-6">생명이 모두 소진되었습니다.</p><button id="restart-stage-btn-4" class="bg-white text-red-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다시 시도 <i data-lucide="rotate-ccw" style="width: 20px; height: 20px;"></i> </button>
       </div>
@@ -336,23 +314,20 @@
       <p id="game5-instruction" class="text-lg text-gray-600">카드를 드래그하여 올바른 카테고리에 분류하세요!</p>
      </div>
      <div class="mb-8 flex justify-center gap-4">
-      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2">
-       <span class="text-gray-600">진행도:</span> <span id="progress5" class="text-2xl font-bold text-amber-600">0/6</span>
+      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2"><span class="text-gray-600">진행도:</span> <span id="progress5" class="text-2xl font-bold text-amber-600">0/6</span>
       </div>
      </div>
      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
       <div class="lg:col-span-3">
        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-amber-200 min-h-96" data-category="executive" style="background: linear-gradient(135deg, rgba(217, 119, 6, 0.05) 0%, rgba(251, 191, 36, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4">
-          <i data-lucide="zap" style="width: 28px; height: 28px; color: #d97706;"></i>
+         <div class="flex items-center gap-2 mb-4"><i data-lucide="zap" style="width: 28px; height: 28px; color: #d97706;"></i>
           <h3 class="text-xl font-bold text-amber-700">행정부 수반으로서의 권한</h3>
          </div>
          <div id="executive-items5" class="space-y-3 min-h-80"></div>
         </div>
         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-rose-200 min-h-96" data-category="sovereignty" style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.05) 0%, rgba(251, 113, 133, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4">
-          <i data-lucide="crown" style="width: 28px; height: 28px; color: #f43f5e;"></i>
+         <div class="flex items-center gap-2 mb-4"><i data-lucide="crown" style="width: 28px; height: 28px; color: #f43f5e;"></i>
           <h3 class="text-xl font-bold text-rose-700">국가 원수로서의 권한</h3>
          </div>
          <div id="sovereignty-items5" class="space-y-3 min-h-80"></div>
@@ -365,15 +340,13 @@
       </div>
      </div>
      <div id="completion-message5" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl p-8 shadow-xl">
-       <i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
+      <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl p-8 shadow-xl"><i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
        <h2 class="text-3xl font-bold mb-4">완벽합니다! 🎉</h2>
        <p class="text-lg mb-6">모든 대통령 권한을 올바르게 분류했습니다!</p><button id="next-stage-btn-5" class="bg-white text-orange-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다음 스테이지로 진행 <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i> </button>
       </div>
      </div>
      <div id="game-over-message5" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-red-400 to-red-600 text-white rounded-xl p-8 shadow-xl">
-       <i data-lucide="x-circle" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
+      <div class="bg-gradient-to-r from-red-400 to-red-600 text-white rounded-xl p-8 shadow-xl"><i data-lucide="x-circle" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
        <h2 class="text-3xl font-bold mb-4">게임 오버! 😢</h2>
        <p class="text-lg mb-6">생명이 모두 소진되었습니다.</p><button id="restart-stage-btn-5" class="bg-white text-red-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다시 시도 <i data-lucide="rotate-ccw" style="width: 20px; height: 20px;"></i> </button>
       </div>
@@ -385,8 +358,7 @@
       <p id="game6-instruction" class="text-lg text-gray-600">카드를 드래그하여 올바른 기관에 분류하세요!</p>
      </div>
      <div class="mb-8 flex justify-center gap-4">
-      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2">
-       <span class="text-gray-600">진행도:</span> <span id="progress6" class="text-2xl font-bold text-cyan-600">0/8</span>
+      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2"><span class="text-gray-600">진행도:</span> <span id="progress6" class="text-2xl font-bold text-cyan-600">0/8</span>
       </div>
      </div>
      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
@@ -394,24 +366,20 @@
        <div class="flex flex-col gap-8">
         <div class="flex items-stretch gap-4 justify-center">
          <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-blue-200 min-h-80 flex-1" data-category="first_trial" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(96, 165, 250, 0.05) 100%);">
-          <div class="flex items-center gap-2 mb-4">
-           <i data-lucide="gavel" style="width: 28px; height: 28px; color: #2563eb;"></i>
+          <div class="flex items-center gap-2 mb-4"><i data-lucide="gavel" style="width: 28px; height: 28px; color: #2563eb;"></i>
            <h3 class="text-xl font-bold text-blue-700">1심</h3>
           </div>
           <div id="first_trial-items6" class="space-y-3 min-h-64"></div>
          </div>
-         <div class="flex flex-col items-center justify-center gap-2">
-          <i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
+         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
          </div>
          <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-red-200 min-h-80 flex-1" data-category="appeal" style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.05) 0%, rgba(251, 113, 133, 0.05) 100%);">
           <div id="appeal-items6" class="space-y-3 min-h-64"></div>
          </div>
-         <div class="flex flex-col items-center justify-center gap-2">
-          <i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
+         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
          </div>
          <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-amber-200 min-h-80 flex-1" data-category="second_trial" style="background: linear-gradient(135deg, rgba(217, 119, 6, 0.05) 0%, rgba(251, 191, 36, 0.05) 100%);">
-          <div class="flex items-center gap-2 mb-4">
-           <i data-lucide="scales" style="width: 28px; height: 28px; color: #d97706;"></i>
+          <div class="flex items-center gap-2 mb-4"><i data-lucide="scales" style="width: 28px; height: 28px; color: #d97706;"></i>
            <h3 class="text-xl font-bold text-amber-700">2심</h3>
           </div>
           <div id="second_trial-items6" class="space-y-3 min-h-64"></div>
@@ -419,18 +387,15 @@
         </div>
         <div class="flex items-stretch gap-4 justify-center">
          <div class="flex-1"></div>
-         <div class="flex flex-col items-center justify-center gap-2">
-          <i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
+         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
          </div>
          <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-orange-200 min-h-80 flex-1" data-category="cassation" style="background: linear-gradient(135deg, rgba(251, 146, 60, 0.05) 0%, rgba(253, 186, 116, 0.05) 100%);">
           <div id="cassation-items6" class="space-y-3 min-h-64"></div>
          </div>
-         <div class="flex flex-col items-center justify-center gap-2">
-          <i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
+         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
          </div>
          <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-purple-200 min-h-80 flex-1" data-category="third_trial" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(196, 181, 253, 0.05) 100%);">
-          <div class="flex items-center gap-2 mb-4">
-           <i data-lucide="crown" style="width: 28px; height: 28px; color: #a855f7;"></i>
+          <div class="flex items-center gap-2 mb-4"><i data-lucide="crown" style="width: 28px; height: 28px; color: #a855f7;"></i>
            <h3 class="text-xl font-bold text-purple-700">3심</h3>
           </div>
           <div id="third_trial-items6" class="space-y-3 min-h-64"></div>
@@ -445,23 +410,20 @@
       </div>
      </div>
      <div id="completion-message6" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-cyan-400 to-blue-500 text-white rounded-xl p-8 shadow-xl">
-       <i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
+      <div class="bg-gradient-to-r from-cyan-400 to-blue-500 text-white rounded-xl p-8 shadow-xl"><i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
        <h2 class="text-3xl font-bold mb-4">완벽합니다! 🎉</h2>
        <p class="text-lg mb-6">모든 사법부 기관을 올바르게 분류했습니다!</p><button id="next-stage-btn-6" class="bg-white text-blue-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다음 단계로 진행 <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i> </button>
       </div>
      </div>
      <div id="game-over-message6" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-red-400 to-red-600 text-white rounded-xl p-8 shadow-xl">
-       <i data-lucide="x-circle" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
+      <div class="bg-gradient-to-r from-red-400 to-red-600 text-white rounded-xl p-8 shadow-xl"><i data-lucide="x-circle" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
        <h2 class="text-3xl font-bold mb-4">게임 오버! 😢</h2>
        <p class="text-lg mb-6">생명이 모두 소진되었습니다.</p><button id="restart-stage-btn-6" class="bg-white text-red-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다시 시도 <i data-lucide="rotate-ccw" style="width: 20px; height: 20px;"></i> </button>
       </div>
      </div>
     </div><!-- 최종 완료 화면 -->
     <div id="final-completion" class="hidden text-center">
-     <div class="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white rounded-2xl p-12 shadow-2xl">
-      <i data-lucide="crown" style="width: 64px; height: 64px; margin: 0 auto 24px;"></i>
+     <div class="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white rounded-2xl p-12 shadow-2xl"><i data-lucide="crown" style="width: 64px; height: 64px; margin: 0 auto 24px;"></i>
       <h1 class="text-4xl font-bold mb-4">축하합니다! 🏆</h1>
       <p class="text-xl mb-8">모든 스테이지를 성공적으로 완료했습니다!</p><button id="restart-all-btn" class="bg-white text-purple-600 font-bold py-4 px-10 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto text-lg"> 처음부터 다시 시작 <i data-lucide="rotate-ccw" style="width: 24px; height: 24px;"></i> </button>
      </div>
@@ -524,6 +486,84 @@
     let cards4 = [], placedCards4 = {}, draggedCard4 = null;
     let cards5 = [], placedCards5 = {}, draggedCard5 = null;
     let cards6 = [], placedCards6 = {}, draggedCard6 = null;
+
+    // Web Audio API를 사용한 효과음 생성
+    let audioContext = null;
+
+    function getAudioContext() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioContext;
+    }
+
+    function playSuccessSound() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        
+        // 성공 음성: 상승하는 두 개의 음
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        
+        osc1.connect(gainNode);
+        osc2.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        
+        // 첫 번째 음 (낮음)
+        osc1.frequency.setValueAtTime(523.25, now); // C5
+        osc1.frequency.exponentialRampToValueAtTime(659.25, now + 0.15); // E5
+        
+        // 두 번째 음 (높음)
+        osc2.frequency.setValueAtTime(659.25, now + 0.1); // E5
+        osc2.frequency.exponentialRampToValueAtTime(783.99, now + 0.25); // G5
+        
+        gainNode.gain.setValueAtTime(0.3, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        
+        osc1.start(now);
+        osc1.stop(now + 0.15);
+        osc2.start(now + 0.1);
+        osc2.stop(now + 0.25);
+      } catch (e) {
+        console.log('음성 재생 불가');
+      }
+    }
+
+    function playErrorSound() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        
+        // 실패 음성: 하강하는 두 개의 음
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        
+        osc1.connect(gainNode);
+        osc2.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        
+        // 첫 번째 음 (높음)
+        osc1.frequency.setValueAtTime(392, now); // G4
+        osc1.frequency.exponentialRampToValueAtTime(293.66, now + 0.15); // D4
+        
+        // 두 번째 음 (더 낮음)
+        osc2.frequency.setValueAtTime(293.66, now + 0.1); // D4
+        osc2.frequency.exponentialRampToValueAtTime(220, now + 0.25); // A3
+        
+        gainNode.gain.setValueAtTime(0.3, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        
+        osc1.start(now);
+        osc1.stop(now + 0.15);
+        osc2.start(now + 0.1);
+        osc2.stop(now + 0.25);
+      } catch (e) {
+        console.log('음성 재생 불가');
+      }
+    }
 
     function startTimer() {
       if (timerInterval) clearInterval(timerInterval);
@@ -766,6 +806,7 @@
               placedCards[category].push(card);
               const cardEl = document.querySelector(`[data-card-id="${draggedCard}"]`);
               if (cardEl) cardEl.classList.add('correct-answer');
+              playSuccessSound();
               renderCards(gameNum);
               renderPlacedCards(gameNum);
               updateProgress(gameNum);
@@ -773,6 +814,7 @@
             } else {
               const cardEl = document.querySelector(`[data-card-id="${draggedCard}"]`);
               if (cardEl) { cardEl.classList.add('shake'); setTimeout(() => cardEl.classList.remove('shake'), 400); }
+              playErrorSound();
               if (currentStage === 2) loseLive();
             }
             window[`draggedCard${gameNum === 1 ? '' : gameNum}`] = null;
@@ -982,5 +1024,5 @@
 
     init();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e12c4df6164aa87',t:'MTc3NDMyNDgyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e96bd70a6eaea0d',t:'MTc3NTcwODY0NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
