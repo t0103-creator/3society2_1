@@ -3,1026 +3,254 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>국회와 대통령 권한 분류 게임</title>
-  <script src="/_sdk/element_sdk.js"></script>
+  <title>생애 주기에 따른 경제생활</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&amp;display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap');
-    
-    * {
-      font-family: 'Noto Sans KR', sans-serif;
-    }
-
-    /* 효과음 생성을 위한 Web Audio API 유틸리티 */
-    .sound-effect {
-      display: none;
-    }
-
-    .card {
-      perspective: 1000px;
-      cursor: grab;
-      active:cursor-grabbing;
-    }
-
-    .card-inner {
-      transition: transform 0.3s ease;
-    }
-
-    .card:hover .card-inner {
-      transform: translateY(-4px);
-    }
-
-    .category-zone {
-      border: 3px dashed transparent;
-      border-radius: 12px;
-      transition: all 0.3s ease;
-    }
-
-    .category-zone.drag-over {
-      border-color: currentColor;
-      background-color: rgba(59, 130, 246, 0.1);
-    }
-
-    .correct-answer {
-      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    @keyframes popIn {
-      0% {
-        opacity: 0;
-        transform: scale(0.5);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    .shake {
-      animation: shake 0.4s ease-in-out;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-8px); }
-      75% { transform: translateX(8px); }
+    * { font-family: 'Noto Sans KR', sans-serif; }
+    .stage-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .stage-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+    textarea { resize: vertical; }
+    .graph-bar { transition: height 0.3s ease; }
+    @media print {
+      .no-print { display: none; }
+      .stage-card { break-inside: avoid; }
     }
   </style>
   <style>body { box-sizing: border-box; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
  </head>
- <body class="h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-  <div class="app-wrapper h-full w-full overflow-auto bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
-   <div class="max-w-6xl mx-auto">
-    <!-- 진행 헤더 -->
-    <div class="text-center mb-8">
-     <h1 class="text-5xl font-bold text-gray-800 mb-4">권한 분류 마스터</h1>
-     <div class="flex justify-center items-center gap-8">
-      <div class="bg-white rounded-lg shadow-md px-8 py-4">
-       <div class="text-sm text-gray-600 mb-1">
-        현재 진행
-       </div>
-       <div class="text-3xl font-bold text-indigo-600"><span id="current-stage">1단계 1스테이지</span>
-       </div>
-      </div>
-      <div class="text-3xl text-gray-400">
-       /
-      </div>
-      <div class="bg-white rounded-lg shadow-md px-8 py-4">
-       <div class="text-sm text-gray-600 mb-1">
-        전체 진행도
-       </div>
-       <div class="text-3xl font-bold text-purple-600"><span id="overall-progress">1</span>/6
-       </div>
-      </div>
-      <div id="lives-display" class="bg-white rounded-lg shadow-md px-8 py-4 hidden">
-       <div class="text-sm text-gray-600 mb-1">
-        남은 생명
-       </div>
-       <div class="text-3xl font-bold text-red-600"><span id="lives-count">3</span>❤️
-       </div>
-      </div>
-      <div id="timer-display" class="bg-white rounded-lg shadow-md px-8 py-4 hidden">
-       <div class="text-sm text-gray-600 mb-1">
-        남은 시간
-       </div>
-       <div class="text-3xl font-bold text-orange-600"><span id="timer">30</span>초
-       </div>
-      </div>
-     </div>
-    </div><!-- 게임 1: 1단계 1스테이지 -->
-    <div id="stage-1-1" class="stage-container">
-     <div class="text-center mb-8">
-      <h2 id="game1-title" class="text-3xl font-bold text-gray-800 mb-2">국회 권한 분류 게임</h2>
-      <p id="game1-instruction" class="text-lg text-gray-600">카드를 드래그하여 올바른 카테고리에 분류하세요!</p>
-     </div>
-     <div class="mb-8 flex justify-center gap-4">
-      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2"><span class="text-gray-600">진행도:</span> <span id="progress" class="text-2xl font-bold text-indigo-600">0/8</span>
-      </div>
-     </div>
-     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-      <div class="lg:col-span-3">
-       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-blue-200 min-h-96" data-category="legislative" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(96, 165, 250, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4"><i data-lucide="book-open" style="width: 28px; height: 28px; color: #2563eb;"></i>
-          <h3 class="text-xl font-bold text-blue-700">입법에 관한 권한</h3>
-         </div>
-         <div id="legislative-items" class="space-y-3 min-h-80"></div>
-        </div>
-        <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-green-200 min-h-96" data-category="financial" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(74, 222, 128, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4"><i data-lucide="wallet" style="width: 28px; height: 28px; color: #16a34a;"></i>
-          <h3 class="text-xl font-bold text-green-700">재정에 관한 권한</h3>
-         </div>
-         <div id="financial-items" class="space-y-3 min-h-80"></div>
-        </div>
-        <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-purple-200 min-h-96" data-category="general" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(196, 181, 253, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4"><i data-lucide="briefcase" style="width: 28px; height: 28px; color: #a855f7;"></i>
-          <h3 class="text-xl font-bold text-purple-700">일반 국정에 관한 권한</h3>
-         </div>
-         <div id="general-items" class="space-y-3 min-h-80"></div>
-        </div>
-       </div>
-      </div>
-      <div class="bg-white rounded-2xl p-6 shadow-lg sticky top-6 h-fit border-4 border-gray-200">
-       <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="cards" style="width: 20px; height: 20px;"></i> 분류할 카드</h3>
-       <div id="card-pool" class="space-y-3 max-h-96 overflow-y-auto"></div>
-      </div>
-     </div>
-     <div id="completion-message" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-xl p-8 shadow-xl"><i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
-       <h2 class="text-3xl font-bold mb-4">완벽합니다! 🎉</h2>
-       <p class="text-lg mb-6">모든 국회 권한을 올바르게 분류했습니다!</p><button id="next-stage-btn-1" class="bg-white text-green-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다음 스테이지로 진행 <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i> </button>
-      </div>
-     </div>
-    </div><!-- 게임 2: 1단계 2스테이지 -->
-    <div id="stage-1-2" class="stage-container hidden">
-     <div class="text-center mb-8">
-      <h2 id="game2-title" class="text-3xl font-bold text-gray-800 mb-2">대통령 권한 분류 게임</h2>
-      <p id="game2-instruction" class="text-lg text-gray-600">카드를 드래그하여 올바른 카테고리에 분류하세요!</p>
-     </div>
-     <div class="mb-8 flex justify-center gap-4">
-      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2"><span class="text-gray-600">진행도:</span> <span id="progress2" class="text-2xl font-bold text-amber-600">0/6</span>
-      </div>
-     </div>
-     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-      <div class="lg:col-span-3">
-       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-amber-200 min-h-96" data-category="executive" style="background: linear-gradient(135deg, rgba(217, 119, 6, 0.05) 0%, rgba(251, 191, 36, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4"><i data-lucide="zap" style="width: 28px; height: 28px; color: #d97706;"></i>
-          <h3 class="text-xl font-bold text-amber-700">행정부 수반으로서의 권한</h3>
-         </div>
-         <div id="executive-items" class="space-y-3 min-h-80"></div>
-        </div>
-        <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-rose-200 min-h-96" data-category="sovereignty" style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.05) 0%, rgba(251, 113, 133, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4"><i data-lucide="crown" style="width: 28px; height: 28px; color: #f43f5e;"></i>
-          <h3 class="text-xl font-bold text-rose-700">국가 원수로서의 권한</h3>
-         </div>
-         <div id="sovereignty-items" class="space-y-3 min-h-80"></div>
-        </div>
-       </div>
-      </div>
-      <div class="bg-white rounded-2xl p-6 shadow-lg sticky top-6 h-fit border-4 border-gray-200">
-       <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="cards" style="width: 20px; height: 20px;"></i> 분류할 카드</h3>
-       <div id="card-pool2" class="space-y-3 max-h-96 overflow-y-auto"></div>
-      </div>
-     </div>
-     <div id="completion-message2" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl p-8 shadow-xl"><i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
-       <h2 class="text-3xl font-bold mb-4">완벽합니다! 🎉</h2>
-       <p class="text-lg mb-6">모든 대통령 권한을 올바르게 분류했습니다!</p><button id="next-stage-btn-2" class="bg-white text-orange-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다음 스테이지로 진행 <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i> </button>
-      </div>
-     </div>
-    </div><!-- 게임 3: 1단계 3스테이지 -->
-    <div id="stage-1-3" class="stage-container hidden">
-     <div class="text-center mb-8">
-      <h2 id="game3-title" class="text-3xl font-bold text-gray-800 mb-2">사법부 기관 분류 게임</h2>
-      <p id="game3-instruction" class="text-lg text-gray-600">카드를 드래그하여 올바른 기관에 분류하세요!</p>
-     </div>
-     <div class="mb-8 flex justify-center gap-4">
-      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2"><span class="text-gray-600">진행도:</span> <span id="progress3" class="text-2xl font-bold text-cyan-600">0/8</span>
-      </div>
-     </div>
-     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-      <div class="lg:col-span-3">
-       <div class="flex flex-col gap-8">
-        <div class="flex items-stretch gap-4 justify-center">
-         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-blue-200 min-h-80 flex-1" data-category="first_trial" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(96, 165, 250, 0.05) 100%);">
-          <div class="flex items-center gap-2 mb-4"><i data-lucide="gavel" style="width: 28px; height: 28px; color: #2563eb;"></i>
-           <h3 class="text-xl font-bold text-blue-700">1심</h3>
-          </div>
-          <div id="first_trial-items" class="space-y-3 min-h-64"></div>
-         </div>
-         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
-         </div>
-         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-red-200 min-h-80 flex-1" data-category="appeal" style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.05) 0%, rgba(251, 113, 133, 0.05) 100%);">
-          <div id="appeal-items" class="space-y-3 min-h-64"></div>
-         </div>
-         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
-         </div>
-         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-amber-200 min-h-80 flex-1" data-category="second_trial" style="background: linear-gradient(135deg, rgba(217, 119, 6, 0.05) 0%, rgba(251, 191, 36, 0.05) 100%);">
-          <div class="flex items-center gap-2 mb-4"><i data-lucide="scales" style="width: 28px; height: 28px; color: #d97706;"></i>
-           <h3 class="text-xl font-bold text-amber-700">2심</h3>
-          </div>
-          <div id="second_trial-items" class="space-y-3 min-h-64"></div>
-         </div>
-        </div>
-        <div class="flex items-stretch gap-4 justify-center">
-         <div class="flex-1"></div>
-         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
-         </div>
-         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-orange-200 min-h-80 flex-1" data-category="cassation" style="background: linear-gradient(135deg, rgba(251, 146, 60, 0.05) 0%, rgba(253, 186, 116, 0.05) 100%);">
-          <div id="cassation-items" class="space-y-3 min-h-64"></div>
-         </div>
-         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
-         </div>
-         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-purple-200 min-h-80 flex-1" data-category="third_trial" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(196, 181, 253, 0.05) 100%);">
-          <div class="flex items-center gap-2 mb-4"><i data-lucide="crown" style="width: 28px; height: 28px; color: #a855f7;"></i>
-           <h3 class="text-xl font-bold text-purple-700">3심</h3>
-          </div>
-          <div id="third_trial-items" class="space-y-3 min-h-64"></div>
-         </div>
-         <div class="flex-1"></div>
-        </div>
-       </div>
-      </div>
-      <div class="bg-white rounded-2xl p-6 shadow-lg sticky top-6 h-fit border-4 border-gray-200">
-       <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="cards" style="width: 20px; height: 20px;"></i> 분류할 카드</h3>
-       <div id="card-pool3" class="space-y-3 max-h-96 overflow-y-auto"></div>
-      </div>
-     </div>
-     <div id="completion-message3" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-cyan-400 to-blue-500 text-white rounded-xl p-8 shadow-xl"><i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
-       <h2 class="text-3xl font-bold mb-4">완벽합니다! 🎉</h2>
-       <p class="text-lg mb-6">모든 사법부 기관을 올바르게 분류했습니다!</p><button id="next-stage-btn-3" class="bg-white text-blue-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다음 단계로 진행 <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i> </button>
-      </div>
-     </div>
-    </div><!-- 게임 4: 2단계 1스테이지 -->
-    <div id="stage-2-1" class="stage-container hidden">
-     <div class="text-center mb-8">
-      <h2 id="game4-title" class="text-3xl font-bold text-gray-800 mb-2">국회 권한 분류 게임</h2>
-      <p id="game4-instruction" class="text-lg text-gray-600">카드를 드래그하여 올바른 카테고리에 분류하세요!</p>
-     </div>
-     <div class="mb-8 flex justify-center gap-4">
-      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2"><span class="text-gray-600">진행도:</span> <span id="progress4" class="text-2xl font-bold text-indigo-600">0/8</span>
-      </div>
-     </div>
-     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-      <div class="lg:col-span-3">
-       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-blue-200 min-h-96" data-category="legislative" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(96, 165, 250, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4"><i data-lucide="book-open" style="width: 28px; height: 28px; color: #2563eb;"></i>
-          <h3 class="text-xl font-bold text-blue-700">입법에 관한 권한</h3>
-         </div>
-         <div id="legislative-items4" class="space-y-3 min-h-80"></div>
-        </div>
-        <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-green-200 min-h-96" data-category="financial" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(74, 222, 128, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4"><i data-lucide="wallet" style="width: 28px; height: 28px; color: #16a34a;"></i>
-          <h3 class="text-xl font-bold text-green-700">재정에 관한 권한</h3>
-         </div>
-         <div id="financial-items4" class="space-y-3 min-h-80"></div>
-        </div>
-        <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-purple-200 min-h-96" data-category="general" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(196, 181, 253, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4"><i data-lucide="briefcase" style="width: 28px; height: 28px; color: #a855f7;"></i>
-          <h3 class="text-xl font-bold text-purple-700">일반 국정에 관한 권한</h3>
-         </div>
-         <div id="general-items4" class="space-y-3 min-h-80"></div>
-        </div>
-       </div>
-      </div>
-      <div class="bg-white rounded-2xl p-6 shadow-lg sticky top-6 h-fit border-4 border-gray-200">
-       <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="cards" style="width: 20px; height: 20px;"></i> 분류할 카드</h3>
-       <div id="card-pool4" class="space-y-3 max-h-96 overflow-y-auto"></div>
-      </div>
-     </div>
-     <div id="completion-message4" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-xl p-8 shadow-xl"><i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
-       <h2 class="text-3xl font-bold mb-4">완벽합니다! 🎉</h2>
-       <p class="text-lg mb-6">모든 국회 권한을 올바르게 분류했습니다!</p><button id="next-stage-btn-4" class="bg-white text-green-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다음 스테이지로 진행 <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i> </button>
-      </div>
-     </div>
-     <div id="game-over-message4" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-red-400 to-red-600 text-white rounded-xl p-8 shadow-xl"><i data-lucide="x-circle" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
-       <h2 class="text-3xl font-bold mb-4">게임 오버! 😢</h2>
-       <p class="text-lg mb-6">생명이 모두 소진되었습니다.</p><button id="restart-stage-btn-4" class="bg-white text-red-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다시 시도 <i data-lucide="rotate-ccw" style="width: 20px; height: 20px;"></i> </button>
-      </div>
-     </div>
-    </div><!-- 게임 5: 2단계 2스테이지 -->
-    <div id="stage-2-2" class="stage-container hidden">
-     <div class="text-center mb-8">
-      <h2 id="game5-title" class="text-3xl font-bold text-gray-800 mb-2">대통령 권한 분류 게임</h2>
-      <p id="game5-instruction" class="text-lg text-gray-600">카드를 드래그하여 올바른 카테고리에 분류하세요!</p>
-     </div>
-     <div class="mb-8 flex justify-center gap-4">
-      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2"><span class="text-gray-600">진행도:</span> <span id="progress5" class="text-2xl font-bold text-amber-600">0/6</span>
-      </div>
-     </div>
-     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-      <div class="lg:col-span-3">
-       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-amber-200 min-h-96" data-category="executive" style="background: linear-gradient(135deg, rgba(217, 119, 6, 0.05) 0%, rgba(251, 191, 36, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4"><i data-lucide="zap" style="width: 28px; height: 28px; color: #d97706;"></i>
-          <h3 class="text-xl font-bold text-amber-700">행정부 수반으로서의 권한</h3>
-         </div>
-         <div id="executive-items5" class="space-y-3 min-h-80"></div>
-        </div>
-        <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-rose-200 min-h-96" data-category="sovereignty" style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.05) 0%, rgba(251, 113, 133, 0.05) 100%);">
-         <div class="flex items-center gap-2 mb-4"><i data-lucide="crown" style="width: 28px; height: 28px; color: #f43f5e;"></i>
-          <h3 class="text-xl font-bold text-rose-700">국가 원수로서의 권한</h3>
-         </div>
-         <div id="sovereignty-items5" class="space-y-3 min-h-80"></div>
-        </div>
-       </div>
-      </div>
-      <div class="bg-white rounded-2xl p-6 shadow-lg sticky top-6 h-fit border-4 border-gray-200">
-       <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="cards" style="width: 20px; height: 20px;"></i> 분류할 카드</h3>
-       <div id="card-pool5" class="space-y-3 max-h-96 overflow-y-auto"></div>
-      </div>
-     </div>
-     <div id="completion-message5" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl p-8 shadow-xl"><i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
-       <h2 class="text-3xl font-bold mb-4">완벽합니다! 🎉</h2>
-       <p class="text-lg mb-6">모든 대통령 권한을 올바르게 분류했습니다!</p><button id="next-stage-btn-5" class="bg-white text-orange-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다음 스테이지로 진행 <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i> </button>
-      </div>
-     </div>
-     <div id="game-over-message5" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-red-400 to-red-600 text-white rounded-xl p-8 shadow-xl"><i data-lucide="x-circle" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
-       <h2 class="text-3xl font-bold mb-4">게임 오버! 😢</h2>
-       <p class="text-lg mb-6">생명이 모두 소진되었습니다.</p><button id="restart-stage-btn-5" class="bg-white text-red-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다시 시도 <i data-lucide="rotate-ccw" style="width: 20px; height: 20px;"></i> </button>
-      </div>
-     </div>
-    </div><!-- 게임 6: 2단계 3스테이지 -->
-    <div id="stage-2-3" class="stage-container hidden">
-     <div class="text-center mb-8">
-      <h2 id="game6-title" class="text-3xl font-bold text-gray-800 mb-2">사법부 기관 분류 게임</h2>
-      <p id="game6-instruction" class="text-lg text-gray-600">카드를 드래그하여 올바른 기관에 분류하세요!</p>
-     </div>
-     <div class="mb-8 flex justify-center gap-4">
-      <div class="bg-white rounded-lg shadow-md px-6 py-3 flex items-center gap-2"><span class="text-gray-600">진행도:</span> <span id="progress6" class="text-2xl font-bold text-cyan-600">0/8</span>
-      </div>
-     </div>
-     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-      <div class="lg:col-span-3">
-       <div class="flex flex-col gap-8">
-        <div class="flex items-stretch gap-4 justify-center">
-         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-blue-200 min-h-80 flex-1" data-category="first_trial" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(96, 165, 250, 0.05) 100%);">
-          <div class="flex items-center gap-2 mb-4"><i data-lucide="gavel" style="width: 28px; height: 28px; color: #2563eb;"></i>
-           <h3 class="text-xl font-bold text-blue-700">1심</h3>
-          </div>
-          <div id="first_trial-items6" class="space-y-3 min-h-64"></div>
-         </div>
-         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
-         </div>
-         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-red-200 min-h-80 flex-1" data-category="appeal" style="background: linear-gradient(135deg, rgba(244, 63, 94, 0.05) 0%, rgba(251, 113, 133, 0.05) 100%);">
-          <div id="appeal-items6" class="space-y-3 min-h-64"></div>
-         </div>
-         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
-         </div>
-         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-amber-200 min-h-80 flex-1" data-category="second_trial" style="background: linear-gradient(135deg, rgba(217, 119, 6, 0.05) 0%, rgba(251, 191, 36, 0.05) 100%);">
-          <div class="flex items-center gap-2 mb-4"><i data-lucide="scales" style="width: 28px; height: 28px; color: #d97706;"></i>
-           <h3 class="text-xl font-bold text-amber-700">2심</h3>
-          </div>
-          <div id="second_trial-items6" class="space-y-3 min-h-64"></div>
-         </div>
-        </div>
-        <div class="flex items-stretch gap-4 justify-center">
-         <div class="flex-1"></div>
-         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
-         </div>
-         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-orange-200 min-h-80 flex-1" data-category="cassation" style="background: linear-gradient(135deg, rgba(251, 146, 60, 0.05) 0%, rgba(253, 186, 116, 0.05) 100%);">
-          <div id="cassation-items6" class="space-y-3 min-h-64"></div>
-         </div>
-         <div class="flex flex-col items-center justify-center gap-2"><i data-lucide="arrow-right" style="width: 32px; height: 32px; color: #9ca3af;"></i>
-         </div>
-         <div class="category-zone bg-white rounded-2xl p-6 shadow-lg border-4 border-purple-200 min-h-80 flex-1" data-category="third_trial" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(196, 181, 253, 0.05) 100%);">
-          <div class="flex items-center gap-2 mb-4"><i data-lucide="crown" style="width: 28px; height: 28px; color: #a855f7;"></i>
-           <h3 class="text-xl font-bold text-purple-700">3심</h3>
-          </div>
-          <div id="third_trial-items6" class="space-y-3 min-h-64"></div>
-         </div>
-         <div class="flex-1"></div>
-        </div>
-       </div>
-      </div>
-      <div class="bg-white rounded-2xl p-6 shadow-lg sticky top-6 h-fit border-4 border-gray-200">
-       <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="cards" style="width: 20px; height: 20px;"></i> 분류할 카드</h3>
-       <div id="card-pool6" class="space-y-3 max-h-96 overflow-y-auto"></div>
-      </div>
-     </div>
-     <div id="completion-message6" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-cyan-400 to-blue-500 text-white rounded-xl p-8 shadow-xl"><i data-lucide="trophy" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
-       <h2 class="text-3xl font-bold mb-4">완벽합니다! 🎉</h2>
-       <p class="text-lg mb-6">모든 사법부 기관을 올바르게 분류했습니다!</p><button id="next-stage-btn-6" class="bg-white text-blue-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다음 단계로 진행 <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i> </button>
-      </div>
-     </div>
-     <div id="game-over-message6" class="hidden text-center mb-8">
-      <div class="bg-gradient-to-r from-red-400 to-red-600 text-white rounded-xl p-8 shadow-xl"><i data-lucide="x-circle" style="width: 48px; height: 48px; margin: 0 auto 16px;"></i>
-       <h2 class="text-3xl font-bold mb-4">게임 오버! 😢</h2>
-       <p class="text-lg mb-6">생명이 모두 소진되었습니다.</p><button id="restart-stage-btn-6" class="bg-white text-red-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto"> 다시 시도 <i data-lucide="rotate-ccw" style="width: 20px; height: 20px;"></i> </button>
-      </div>
-     </div>
-    </div><!-- 최종 완료 화면 -->
-    <div id="final-completion" class="hidden text-center">
-     <div class="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white rounded-2xl p-12 shadow-2xl"><i data-lucide="crown" style="width: 64px; height: 64px; margin: 0 auto 24px;"></i>
-      <h1 class="text-4xl font-bold mb-4">축하합니다! 🏆</h1>
-      <p class="text-xl mb-8">모든 스테이지를 성공적으로 완료했습니다!</p><button id="restart-all-btn" class="bg-white text-purple-600 font-bold py-4 px-10 rounded-lg hover:bg-gray-50 transition duration-200 flex items-center gap-2 mx-auto text-lg"> 처음부터 다시 시작 <i data-lucide="rotate-ccw" style="width: 24px; height: 24px;"></i> </button>
-     </div>
+ <body class="h-full bg-slate-50">
+  <div id="app" class="w-full h-full overflow-auto">
+   <!-- Header -->
+   <header class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white py-8 px-6 text-center">
+    <h1 id="main-title" class="text-3xl font-black tracking-tight">생애 주기에 따른 경제생활</h1>
+    <p class="mt-2 text-emerald-100 text-sm">지속 가능한 경제생활 | 활동지</p>
+    <div class="mt-3 flex justify-center gap-6 text-xs text-emerald-200"><label class="flex items-center gap-2"> <span>학년/반:</span> <input type="text" class="bg-emerald-500 text-white placeholder-emerald-200 border-b border-emerald-300 w-24 px-1 py-0.5 text-center text-xs focus:outline-none focus:border-white" placeholder="예: 2-1"> </label> <label class="flex items-center gap-2"> <span>이름:</span> <input type="text" class="bg-emerald-500 text-white placeholder-emerald-200 border-b border-emerald-300 w-24 px-1 py-0.5 text-center text-xs focus:outline-none focus:border-white" placeholder="예: 홍길동"> </label> <label class="flex items-center gap-2"> <span>날짜:</span> <input type="date" class="bg-emerald-500 text-white placeholder-emerald-200 border-b border-emerald-300 w-28 px-1 py-0.5 text-center text-xs focus:outline-none focus:border-white" style="color-scheme: dark;"> </label>
     </div>
-   </div>
+   </header>
+   <main class="max-w-5xl mx-auto px-4 py-8 space-y-10">
+    <!-- Section 1: Life Stages -->
+    <section>
+     <div class="flex items-center gap-2 mb-4">
+      <span class="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-sm">1</span>
+      <h2 class="text-xl font-bold text-slate-800">생애 주기별 경제적 특징 정리</h2>
+     </div>
+     <p class="text-sm text-slate-500 mb-4 ml-10">각 시기의 경제적 특징(소득, 소비, 저축 등)을 정리해 봅시다.</p>
+     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="stages-grid">
+     </div>
+    </section><!-- Section 2: Bucket List -->
+    <section>
+     <div class="flex items-center gap-2 mb-4">
+      <span class="w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold text-sm">2</span>
+      <h2 class="text-xl font-bold text-slate-800">생애 주기별 버킷리스트</h2>
+     </div>
+     <p class="text-sm text-slate-500 mb-4 ml-10">각 시기에 이루고 싶은 목표를 작성해 봅시다.</p>
+     <div class="space-y-4" id="bucket-list">
+     </div>
+    </section><!-- Section 3: Graph -->
+    <section>
+     <div class="flex items-center gap-2 mb-4">
+      <span class="w-8 h-8 bg-cyan-600 text-white rounded-full flex items-center justify-center font-bold text-sm">3</span>
+      <h2 class="text-xl font-bold text-slate-800">10년 주기 나이대별 소득·저축·소비 그래프</h2>
+     </div>
+     <p class="text-sm text-slate-500 mb-6 ml-10">버킷리스트를 이루기 위해 필요한 금액을 예상하여 그래프를 완성해 봅시다. (단위: 만원/월)</p><!-- Input Table -->
+     <div class="overflow-x-auto mb-6">
+      <table class="w-full text-sm border-collapse" id="graph-table">
+       <thead>
+        <tr class="bg-slate-200 text-slate-700">
+         <th class="border border-slate-300 px-3 py-2">구분</th>
+         <th class="border border-slate-300 px-3 py-2">10대</th>
+         <th class="border border-slate-300 px-3 py-2">20대</th>
+         <th class="border border-slate-300 px-3 py-2">30대</th>
+         <th class="border border-slate-300 px-3 py-2">40대</th>
+         <th class="border border-slate-300 px-3 py-2">50대</th>
+         <th class="border border-slate-300 px-3 py-2">60대</th>
+         <th class="border border-slate-300 px-3 py-2">70대+</th>
+        </tr>
+       </thead>
+       <tbody>
+        <tr>
+         <td class="border border-slate-300 px-3 py-2 font-medium bg-blue-50 text-blue-700">소득</td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="income" data-age="0" value="0"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="income" data-age="1" value="150"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="income" data-age="2" value="300"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="income" data-age="3" value="400"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="income" data-age="4" value="350"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="income" data-age="5" value="200"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="income" data-age="6" value="100"></td>
+        </tr>
+        <tr>
+         <td class="border border-slate-300 px-3 py-2 font-medium bg-green-50 text-green-700">저축</td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="savings" data-age="0" value="0"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="savings" data-age="1" value="30"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="savings" data-age="2" value="80"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="savings" data-age="3" value="100"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="savings" data-age="4" value="80"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="savings" data-age="5" value="30"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="savings" data-age="6" value="0"></td>
+        </tr>
+        <tr>
+         <td class="border border-slate-300 px-3 py-2 font-medium bg-orange-50 text-orange-700">소비</td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="spending" data-age="0" value="30"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="spending" data-age="1" value="120"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="spending" data-age="2" value="220"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="spending" data-age="3" value="300"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="spending" data-age="4" value="270"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="spending" data-age="5" value="170"></td>
+         <td class="border border-slate-300 p-1"><input type="number" class="w-full px-2 py-1 border rounded text-center" data-type="spending" data-age="6" value="100"></td>
+        </tr>
+       </tbody>
+      </table>
+     </div><button onclick="drawGraph()" class="no-print mb-4 px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm font-medium hover:bg-cyan-700 transition"> 그래프 그리기 </button> <!-- Graph Area -->
+     <div class="bg-white rounded-xl border border-slate-200 p-6">
+      <div class="flex items-end justify-between gap-2" id="graph-area" style="height: 280px;">
+      </div>
+      <div class="flex justify-between mt-2 text-xs text-slate-500 px-2">
+       <span>10대</span><span>20대</span><span>30대</span><span>40대</span><span>50대</span><span>60대</span><span>70대+</span>
+      </div>
+      <div class="flex justify-center gap-6 mt-4 text-xs">
+       <span class="flex items-center gap-1"><span class="w-3 h-3 bg-blue-500 rounded"></span> 소득</span> <span class="flex items-center gap-1"><span class="w-3 h-3 bg-green-500 rounded"></span> 저축</span> <span class="flex items-center gap-1"><span class="w-3 h-3 bg-orange-500 rounded"></span> 소비</span>
+      </div>
+     </div>
+    </section><!-- Reflection -->
+    <section class="bg-white rounded-xl border border-slate-200 p-6">
+     <h3 class="font-bold text-slate-800 mb-3">💡 활동을 마치며 (느낀 점)</h3><textarea class="w-full border border-slate-300 rounded-lg p-3 text-sm" rows="4" placeholder="생애 주기별 경제생활 계획을 세우면서 느낀 점을 자유롭게 작성해 봅시다."></textarea>
+    </section>
+   </main>
   </div>
   <script>
-    const defaultConfig = {
-      game1_title: "국회 권한 분류 게임",
-      game1_instruction: "카드를 드래그하여 올바른 카테고리에 분류하세요!",
-      game2_title: "대통령 권한 분류 게임",
-      game2_instruction: "카드를 드래그하여 올바른 카테고리에 분류하세요!",
-      game3_title: "사법부 기관 분류 게임",
-      game3_instruction: "카드를 드래그하여 올바른 기관에 분류하세요!",
-      game4_title: "국회 권한 분류 게임",
-      game4_instruction: "카드를 드래그하여 올바른 카테고리에 분류하세요!",
-      game5_title: "대통령 권한 분류 게임",
-      game5_instruction: "카드를 드래그하여 올바른 카테고리에 분류하세요!",
-      game6_title: "사법부 기관 분류 게임",
-      game6_instruction: "카드를 드래그하여 올바른 기관에 분류하세요!"
-    };
+  // Life stages data
+  const stages = [
+    { name: '유소년기', age: '0~12세', emoji: '👶', color: 'rose', hint: '부모님의 경제적 도움, 용돈 관리 시작' },
+    { name: '청소년기', age: '13~18세', emoji: '🎒', color: 'amber', hint: '용돈 관리, 소비 습관 형성, 진로 탐색' },
+    { name: '청년기', age: '19~29세', emoji: '🎓', color: 'blue', hint: '취업, 첫 소득, 자산 형성 시작' },
+    { name: '장년기', age: '30~49세', emoji: '💼', color: 'emerald', hint: '소득 증가, 주택/자녀 교육비, 본격 저축' },
+    { name: '중년기', age: '50~64세', emoji: '🏡', color: 'purple', hint: '소득 절정 후 감소, 노후 준비, 자녀 독립' },
+    { name: '노년기', age: '65세 이상', emoji: '🌿', color: 'cyan', hint: '연금/저축 활용, 의료비 증가, 여가 생활' }
+  ];
 
-    let config = { ...defaultConfig };
-    let currentStage = 1;
-    let currentStageDetail = 1;
-    let lives = 3;
-    let timeLeft = 30;
-    let timerInterval = null;
-
-    const gameData = {
-      legislative: ["법률 제정 및 개정", "조약 동의", "헌법 개정안 제안"],
-      financial: ["예산안 심의·확정"],
-      general: ["대통령 탄핵소추", "국무총리 임명 동의", "대법원장 임명 동의", "감사원장 임명 동의"]
-    };
-
-    const gameData2 = {
-      executive: ["법률 공포", "법률 거부권(재의요구)", "행정부 지휘, 감독", "행정부 고위 공무원 임면권", "국무 회의의 의장"],
-      sovereignty: ["국가원수로서의 외교사절 접수", "조약 체결 및 공개", "헌법 기관 구성", "국민 투표", "긴급 명령권", "계엄 선포"]
-    };
-
-    const gameData3 = {
-      first_trial: ["지방법원", "가정법원", "행정법원"],
-      appeal: ["항소"],
-      second_trial: ["고등법원"],
-      cassation: ["상고"],
-      third_trial: ["대법원"]
-    };
-
-    const gameData6 = {
-      first_trial: ["지방법원", "가정법원", "행정법원"],
-      appeal: ["항소"],
-      second_trial: ["고등법원"],
-      cassation: ["상고"],
-      third_trial: ["대법원"]
-    };
-
-    let cards = [], placedCards = {}, draggedCard = null;
-    let cards2 = [], placedCards2 = {}, draggedCard2 = null;
-    let cards3 = [], placedCards3 = {}, draggedCard3 = null;
-    let cards4 = [], placedCards4 = {}, draggedCard4 = null;
-    let cards5 = [], placedCards5 = {}, draggedCard5 = null;
-    let cards6 = [], placedCards6 = {}, draggedCard6 = null;
-
-    // Web Audio API를 사용한 효과음 생성
-    let audioContext = null;
-
-    function getAudioContext() {
-      if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      return audioContext;
-    }
-
-    function playSuccessSound() {
-      try {
-        const ctx = getAudioContext();
-        const now = ctx.currentTime;
-        
-        // 성공 음성: 상승하는 두 개의 음
-        const osc1 = ctx.createOscillator();
-        const osc2 = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-        
-        osc1.connect(gainNode);
-        osc2.connect(gainNode);
-        gainNode.connect(ctx.destination);
-        
-        // 첫 번째 음 (낮음)
-        osc1.frequency.setValueAtTime(523.25, now); // C5
-        osc1.frequency.exponentialRampToValueAtTime(659.25, now + 0.15); // E5
-        
-        // 두 번째 음 (높음)
-        osc2.frequency.setValueAtTime(659.25, now + 0.1); // E5
-        osc2.frequency.exponentialRampToValueAtTime(783.99, now + 0.25); // G5
-        
-        gainNode.gain.setValueAtTime(0.3, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        
-        osc1.start(now);
-        osc1.stop(now + 0.15);
-        osc2.start(now + 0.1);
-        osc2.stop(now + 0.25);
-      } catch (e) {
-        console.log('음성 재생 불가');
-      }
-    }
-
-    function playErrorSound() {
-      try {
-        const ctx = getAudioContext();
-        const now = ctx.currentTime;
-        
-        // 실패 음성: 하강하는 두 개의 음
-        const osc1 = ctx.createOscillator();
-        const osc2 = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-        
-        osc1.connect(gainNode);
-        osc2.connect(gainNode);
-        gainNode.connect(ctx.destination);
-        
-        // 첫 번째 음 (높음)
-        osc1.frequency.setValueAtTime(392, now); // G4
-        osc1.frequency.exponentialRampToValueAtTime(293.66, now + 0.15); // D4
-        
-        // 두 번째 음 (더 낮음)
-        osc2.frequency.setValueAtTime(293.66, now + 0.1); // D4
-        osc2.frequency.exponentialRampToValueAtTime(220, now + 0.25); // A3
-        
-        gainNode.gain.setValueAtTime(0.3, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        
-        osc1.start(now);
-        osc1.stop(now + 0.15);
-        osc2.start(now + 0.1);
-        osc2.stop(now + 0.25);
-      } catch (e) {
-        console.log('음성 재생 불가');
-      }
-    }
-
-    function startTimer() {
-      if (timerInterval) clearInterval(timerInterval);
-      timeLeft = 30;
-      updateTimerDisplay();
-      timerInterval = setInterval(() => {
-        timeLeft--;
-        updateTimerDisplay();
-        if (timeLeft <= 0) {
-          clearInterval(timerInterval);
-          loseLive();
-        }
-      }, 1000);
-    }
-
-    function updateTimerDisplay() {
-      document.getElementById('timer').textContent = timeLeft;
-    }
-
-    function loseLive() {
-      lives--;
-      document.getElementById('lives-count').textContent = lives;
-      clearInterval(timerInterval);
-      if (lives <= 0) {
-        showGameOverConfirmation();
-      } else {
-        showRetryConfirmation();
-      }
-    }
-
-    function showRetryConfirmation() {
-      const confirmDiv = document.createElement('div');
-      confirmDiv.id = 'retry-confirmation';
-      confirmDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-      confirmDiv.innerHTML = `
-        <div class="bg-white rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4">
-          <div class="text-center mb-6">
-            <i data-lucide="alert-circle" style="width: 48px; height: 48px; color: #ef4444; margin: 0 auto 16px;"></i>
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">시간 초과!</h2>
-            <p class="text-gray-600">남은 생명: <span class="font-bold text-red-600">${lives}개</span></p>
-          </div>
-          <div class="bg-yellow-50 rounded-lg p-4 mb-6 border-l-4 border-yellow-500">
-            <p class="text-sm text-gray-700">현재 스테이지를 다시 도전하시겠습니까? 타이머는 30초로 초기화됩니다.</p>
-          </div>
-          <div class="flex gap-3">
-            <button id="retry-btn" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition duration-200 flex items-center justify-center gap-2">
-              <i data-lucide="rotate-ccw" style="width: 20px; height: 20px;"></i> 다시 도전
-            </button>
-            <button id="give-up-btn" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-lg hover:bg-gray-300 transition duration-200">포기</button>
+  // Render stages
+  const stagesGrid = document.getElementById('stages-grid');
+  stages.forEach(s => {
+    stagesGrid.innerHTML += `
+      <div class="stage-card bg-white rounded-xl border border-slate-200 p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-2xl">${s.emoji}</span>
+          <div>
+            <h3 class="font-bold text-slate-800 text-sm">${s.name}</h3>
+            <span class="text-xs text-slate-400">${s.age}</span>
           </div>
         </div>
-      `;
-      
-      document.body.appendChild(confirmDiv);
-      lucide.createIcons();
-      
-      document.getElementById('retry-btn').addEventListener('click', () => {
-        confirmDiv.remove();
-        retryCurrentStage();
-      });
-      
-      document.getElementById('give-up-btn').addEventListener('click', () => {
-        confirmDiv.remove();
-        showGameOverConfirmation();
-      });
-    }
+        <p class="text-xs text-slate-400 mb-2 italic">힌트: ${s.hint}</p>
+        <textarea class="w-full border border-slate-200 rounded p-2 text-xs" rows="3" placeholder="이 시기의 경제적 특징을 작성하세요..."></textarea>
+      </div>`;
+  });
 
-    function showGameOverConfirmation() {
-      clearInterval(timerInterval);
-      const confirmDiv = document.createElement('div');
-      confirmDiv.id = 'game-over-confirmation';
-      confirmDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-      confirmDiv.innerHTML = `
-        <div class="bg-white rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4">
-          <div class="text-center mb-6">
-            <i data-lucide="x-circle" style="width: 48px; height: 48px; color: #ef4444; margin: 0 auto 16px;"></i>
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">게임 오버!</h2>
-            <p class="text-gray-600">생명이 모두 소진되었습니다.</p>
-          </div>
-          <div class="bg-red-50 rounded-lg p-4 mb-6 border-l-4 border-red-500">
-            <p class="text-sm text-gray-700">2단계를 처음부터 다시 도전하시겠습니까?</p>
-          </div>
-          <div class="flex gap-3">
-            <button id="restart-stage2-btn" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition duration-200 flex items-center justify-center gap-2">
-              <i data-lucide="rotate-ccw" style="width: 20px; height: 20px;"></i> 다시 도전
-            </button>
-            <button id="quit-btn" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-lg hover:bg-gray-300 transition duration-200">처음부터</button>
-          </div>
+  // Render bucket list
+  const bucketList = document.getElementById('bucket-list');
+  stages.forEach(s => {
+    bucketList.innerHTML += `
+      <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-xl">${s.emoji}</span>
+          <h3 class="font-bold text-sm text-slate-700">${s.name} (${s.age})</h3>
         </div>
-      `;
-      
-      document.body.appendChild(confirmDiv);
-      lucide.createIcons();
-      
-      document.getElementById('restart-stage2-btn').addEventListener('click', () => {
-        confirmDiv.remove();
-        restartStage2();
-      });
-      
-      document.getElementById('quit-btn').addEventListener('click', () => {
-        confirmDiv.remove();
-        restartAll();
-      });
-    }
-
-    function showGameOver() {
-      clearInterval(timerInterval);
-      const stageId = `stage-2-${currentStageDetail}`;
-      if (currentStageDetail === 1) {
-        document.getElementById('completion-message4').classList.add('hidden');
-        document.getElementById('game-over-message4').classList.remove('hidden');
-      } else if (currentStageDetail === 2) {
-        document.getElementById('completion-message5').classList.add('hidden');
-        document.getElementById('game-over-message5').classList.remove('hidden');
-      } else if (currentStageDetail === 3) {
-        document.getElementById('completion-message6').classList.add('hidden');
-        document.getElementById('game-over-message6').classList.remove('hidden');
-      }
-    }
-
-    function updateStageDisplay() {
-      document.getElementById('current-stage').textContent = `${currentStage}단계 ${currentStageDetail}스테이지`;
-      document.getElementById('overall-progress').textContent = currentStage === 1 ? currentStageDetail : (3 + currentStageDetail);
-    }
-
-    function showStage(stageNum, stageDetail) {
-      document.querySelectorAll('.stage-container').forEach(el => el.classList.add('hidden'));
-      document.getElementById(`stage-${stageNum}-${stageDetail}`).classList.remove('hidden');
-      
-      const livesDisplay = document.getElementById('lives-display');
-      const timerDisplay = document.getElementById('timer-display');
-      if (stageNum === 2) {
-        livesDisplay.classList.remove('hidden');
-        timerDisplay.classList.remove('hidden');
-      } else {
-        livesDisplay.classList.add('hidden');
-        timerDisplay.classList.add('hidden');
-      }
-      updateStageDisplay();
-    }
-
-    function initializeGame(gameNum) {
-      const gameDataMap = { 1: gameData, 2: gameData2, 3: gameData3, 4: gameData, 5: gameData2, 6: gameData6 };
-      const currentData = gameDataMap[gameNum];
-      let cards, placedCards;
-
-      if (gameNum <= 3) {
-        if (gameNum === 1) { cards = cards; placedCards = placedCards; }
-        else if (gameNum === 2) { cards = cards2; placedCards = placedCards2; }
-        else { cards = cards3; placedCards = placedCards3; }
-      } else {
-        if (gameNum === 4) { cards = cards4; placedCards = placedCards4; }
-        else if (gameNum === 5) { cards = cards5; placedCards = placedCards5; }
-        else { cards = cards6; placedCards = placedCards6; }
-      }
-
-      cards = [];
-      placedCards = {};
-      Object.keys(currentData).forEach(cat => placedCards[cat] = []);
-      
-      Object.keys(currentData).forEach(category => {
-        currentData[category].forEach((item, idx) => {
-          cards.push({ id: `${category}-${idx}`, text: item, correctCategory: category });
-        });
-      });
-      
-      cards.sort(() => Math.random() - 0.5);
-      
-      if (gameNum === 1) { window.cards = cards; window.placedCards = placedCards; }
-      else if (gameNum === 2) { window.cards2 = cards; window.placedCards2 = placedCards; }
-      else if (gameNum === 3) { window.cards3 = cards; window.placedCards3 = placedCards; }
-      else if (gameNum === 4) { window.cards4 = cards; window.placedCards4 = placedCards; if (currentStage === 2) startTimer(); }
-      else if (gameNum === 5) { window.cards5 = cards; window.placedCards5 = placedCards; if (currentStage === 2) startTimer(); }
-      else if (gameNum === 6) { window.cards6 = cards; window.placedCards6 = placedCards; if (currentStage === 2) startTimer(); }
-      
-      renderCards(gameNum);
-      renderPlacedCards(gameNum);
-      updateProgress(gameNum);
-    }
-
-    function renderCards(gameNum) {
-      const poolId = `card-pool${gameNum === 1 ? '' : gameNum}`;
-      const cardPool = document.getElementById(poolId);
-      const cards = window[`cards${gameNum === 1 ? '' : gameNum}`];
-      const placedCards = window[`placedCards${gameNum === 1 ? '' : gameNum}`];
-      
-      cardPool.innerHTML = '';
-      const unplacedCards = cards.filter(card => !Object.values(placedCards).flat().some(c => c.id === card.id));
-      
-      const colors = { 1: 'indigo', 2: 'amber', 3: 'cyan', 4: 'indigo', 5: 'amber', 6: 'cyan' };
-      const color = colors[gameNum];
-      
-      unplacedCards.forEach(card => {
-        const cardEl = document.createElement('div');
-        cardEl.className = `card bg-gradient-to-br from-${color}-400 to-${color}-600 text-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow cursor-grab active:cursor-grabbing`;
-        cardEl.draggable = true;
-        cardEl.dataset.cardId = card.id;
-        cardEl.innerHTML = `<div class="card-inner font-semibold text-sm text-center">${card.text}</div>`;
-        
-        const dragStartFn = (e) => { window[`draggedCard${gameNum === 1 ? '' : gameNum}`] = e.currentTarget.dataset.cardId; e.dataTransfer.effectAllowed = 'move'; };
-        const dragEndFn = () => { window[`draggedCard${gameNum === 1 ? '' : gameNum}`] = null; };
-        
-        cardEl.addEventListener('dragstart', dragStartFn);
-        cardEl.addEventListener('dragend', dragEndFn);
-        cardPool.appendChild(cardEl);
-      });
-    }
-
-    function setupDropZones() {
-      document.querySelectorAll('[data-category]').forEach(zone => {
-        zone.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; e.currentTarget.classList.add('drag-over'); });
-        zone.addEventListener('dragleave', (e) => { if (e.currentTarget === e.target) e.currentTarget.classList.remove('drag-over'); });
-        
-        zone.addEventListener('drop', (e) => {
-          e.preventDefault();
-          e.currentTarget.classList.remove('drag-over');
-          
-          const stageContainer = zone.closest('.stage-container');
-          const stageId = stageContainer.id;
-          let gameNum = parseInt(stageId.split('-')[1] + stageId.split('-')[2]);
-          if (stageId === 'stage-1-1') gameNum = 1;
-          else if (stageId === 'stage-1-2') gameNum = 2;
-          else if (stageId === 'stage-1-3') gameNum = 3;
-          else if (stageId === 'stage-2-1') gameNum = 4;
-          else if (stageId === 'stage-2-2') gameNum = 5;
-          else if (stageId === 'stage-2-3') gameNum = 6;
-          
-          const draggedCard = window[`draggedCard${gameNum === 1 ? '' : gameNum}`];
-          const cards = window[`cards${gameNum === 1 ? '' : gameNum}`];
-          const placedCards = window[`placedCards${gameNum === 1 ? '' : gameNum}`];
-          const category = e.currentTarget.dataset.category;
-          
-          if (draggedCard) {
-            const card = cards.find(c => c.id === draggedCard);
-            Object.keys(placedCards).forEach(cat => {
-              placedCards[cat] = placedCards[cat].filter(c => c.id !== draggedCard);
-            });
-            
-            if (card.correctCategory === category) {
-              placedCards[category].push(card);
-              const cardEl = document.querySelector(`[data-card-id="${draggedCard}"]`);
-              if (cardEl) cardEl.classList.add('correct-answer');
-              playSuccessSound();
-              renderCards(gameNum);
-              renderPlacedCards(gameNum);
-              updateProgress(gameNum);
-              if (cards.length === Object.values(placedCards).flat().length) showCompletion(gameNum);
-            } else {
-              const cardEl = document.querySelector(`[data-card-id="${draggedCard}"]`);
-              if (cardEl) { cardEl.classList.add('shake'); setTimeout(() => cardEl.classList.remove('shake'), 400); }
-              playErrorSound();
-              if (currentStage === 2) loseLive();
-            }
-            window[`draggedCard${gameNum === 1 ? '' : gameNum}`] = null;
-          }
-        });
-      });
-    }
-
-    function renderPlacedCards(gameNum) {
-      const placedCards = window[`placedCards${gameNum === 1 ? '' : gameNum}`];
-      const colorMap = { blue: '#2563eb', green: '#16a34a', purple: '#a855f7', amber: '#d97706', rose: '#f43f5e', red: '#dc2626', orange: '#f97316' };
-      const categoryColors = { legislative: 'blue', financial: 'green', general: 'purple', executive: 'amber', sovereignty: 'rose', first_trial: 'blue', appeal: 'red', second_trial: 'amber', cassation: 'orange', third_trial: 'purple' };
-      
-      Object.keys(placedCards).forEach(category => {
-        let containerId = '';
-        if (gameNum === 1) containerId = `${category}-items`;
-        else if (gameNum === 2) containerId = `${category}-items`;
-        else if (gameNum === 3) containerId = `${category}-items`;
-        else if (gameNum === 4) containerId = `${category}-items4`;
-        else if (gameNum === 5) containerId = `${category}-items5`;
-        else if (gameNum === 6) containerId = `${category}-items6`;
-        
-        const container = document.getElementById(containerId);
-        if (!container) return;
-        container.innerHTML = '';
-        
-        placedCards[category].forEach(card => {
-          const cardEl = document.createElement('div');
-          const colorClass = categoryColors[category] || 'gray';
-          const borderColor = colorMap[colorClass] || '#d1d5db';
-          cardEl.style.backgroundColor = '#f9fafb';
-          cardEl.style.borderRadius = '8px';
-          cardEl.style.padding = '12px';
-          cardEl.style.fontSize = '14px';
-          cardEl.style.fontWeight = '500';
-          cardEl.style.color = '#374151';
-          cardEl.style.borderLeft = '4px solid ' + borderColor;
-          cardEl.style.display = 'flex';
-          cardEl.style.alignItems = 'center';
-          cardEl.style.gap = '8px';
-          cardEl.innerHTML = `<i data-lucide="check-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i><span>${card.text}</span>`;
-          container.appendChild(cardEl);
-        });
-        lucide.createIcons();
-      });
-    }
-
-    function updateProgress(gameNum) {
-      const cards = window[`cards${gameNum === 1 ? '' : gameNum}`];
-      const placedCards = window[`placedCards${gameNum === 1 ? '' : gameNum}`];
-      const placed = Object.values(placedCards).flat().length;
-      document.getElementById(`progress${gameNum === 1 ? '' : gameNum}`).textContent = `${placed}/${cards.length}`;
-    }
-
-    function showCompletion(gameNum) {
-      clearInterval(timerInterval);
-      document.getElementById(`completion-message${gameNum === 1 ? '' : gameNum}`).classList.remove('hidden');
-      lucide.createIcons();
-    }
-
-    function goToNextStage() {
-      currentStageDetail++;
-      
-      if (currentStage === 1 && currentStageDetail > 3) {
-        showStage2Confirmation();
-      } else if (currentStage === 2 && currentStageDetail > 3) {
-        clearInterval(timerInterval);
-        document.querySelectorAll('.stage-container').forEach(el => el.classList.add('hidden'));
-        document.getElementById('final-completion').classList.remove('hidden');
-        lucide.createIcons();
-      } else {
-        showStage(currentStage, currentStageDetail);
-        const gameNum = (currentStage - 1) * 3 + currentStageDetail;
-        initializeGame(gameNum);
-        lucide.createIcons();
-      }
-    }
-
-    function showStage2Confirmation() {
-      document.querySelectorAll('.stage-container').forEach(el => el.classList.add('hidden'));
-      document.getElementById('final-completion').classList.add('hidden');
-      
-      const confirmDiv = document.createElement('div');
-      confirmDiv.id = 'stage2-confirmation';
-      confirmDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-      confirmDiv.innerHTML = `
-        <div class="bg-white rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4">
-          <div class="text-center mb-6">
-            <i data-lucide="star" style="width: 48px; height: 48px; color: #f59e0b; margin: 0 auto 16px;"></i>
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">1단계 완료!</h2>
-            <p class="text-gray-600">축하합니다! 1단계를 모두 통과했습니다.</p>
-          </div>
-          <div class="bg-blue-50 rounded-lg p-4 mb-6 border-l-4 border-blue-500">
-            <p class="text-sm text-gray-700"><span class="font-bold text-blue-600">⚠️ 주의:</span> 2단계는 제한된 시간 내에 분류해야 하며, 틀리면 생명을 잃습니다.</p>
-          </div>
-          <div class="flex gap-3">
-            <button id="confirm-stage2-btn" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition duration-200 flex items-center justify-center gap-2">
-              <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i> 2단계 도전
-            </button>
-            <button id="cancel-stage2-btn" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-lg hover:bg-gray-300 transition duration-200">처음부터</button>
-          </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <input type="text" class="border border-slate-200 rounded px-3 py-2 text-xs" placeholder="목표 1">
+          <input type="text" class="border border-slate-200 rounded px-3 py-2 text-xs" placeholder="목표 2">
+          <input type="text" class="border border-slate-200 rounded px-3 py-2 text-xs" placeholder="목표 3">
         </div>
-      `;
-      
-      document.body.appendChild(confirmDiv);
-      lucide.createIcons();
-      
-      document.getElementById('confirm-stage2-btn').addEventListener('click', () => {
-        confirmDiv.remove();
-        goToStage2();
+      </div>`;
+  });
+
+  // Graph drawing
+  function drawGraph() {
+    const area = document.getElementById('graph-area');
+    area.innerHTML = '';
+    const ages = 7;
+    let maxVal = 1;
+
+    const data = { income: [], savings: [], spending: [] };
+    document.querySelectorAll('#graph-table input').forEach(input => {
+      const type = input.dataset.type;
+      const val = parseInt(input.value) || 0;
+      data[type].push(val);
+      if (val > maxVal) maxVal = val;
+    });
+
+    for (let i = 0; i < ages; i++) {
+      const group = document.createElement('div');
+      group.className = 'flex items-end gap-1 flex-1 justify-center';
+      group.style.height = '100%';
+
+      const types = [
+        { key: 'income', color: 'bg-blue-500' },
+        { key: 'savings', color: 'bg-green-500' },
+        { key: 'spending', color: 'bg-orange-500' }
+      ];
+
+      types.forEach(t => {
+        const val = data[t.key][i];
+        const pct = (val / maxVal) * 100;
+        const bar = document.createElement('div');
+        bar.className = `graph-bar ${t.color} rounded-t w-4 relative group`;
+        bar.style.height = pct + '%';
+        bar.title = `${val}만원`;
+        const label = document.createElement('span');
+        label.className = 'absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] text-slate-600 font-medium';
+        label.textContent = val;
+        bar.appendChild(label);
+        group.appendChild(bar);
       });
-      
-      document.getElementById('cancel-stage2-btn').addEventListener('click', () => {
-        confirmDiv.remove();
-        restartAll();
-      });
+
+      area.appendChild(group);
     }
+  }
 
-    function goToStage2() {
-      currentStage = 2;
-      currentStageDetail = 1;
-      lives = 3;
-      document.getElementById('lives-count').textContent = lives;
-      showStage(currentStage, currentStageDetail);
-      initializeGame(4);
-      lucide.createIcons();
-    }
+  drawGraph();
 
-    function restartStage() {
-      if (currentStage === 2) {
-        lives = 3;
-        document.getElementById('lives-count').textContent = lives;
-        currentStageDetail = 1;
-        showStage(currentStage, currentStageDetail);
-        initializeGame(4);
-        lucide.createIcons();
-      }
-    }
+  // Element SDK
+  const defaultConfig = {
+    page_title: '생애 주기에 따른 경제생활',
+    background_color: '#f8fafc',
+    header_color: '#059669',
+    text_color: '#1e293b',
+    accent_color: '#0d9488',
+    surface_color: '#ffffff',
+    font_family: 'Noto Sans KR',
+    font_size: 14
+  };
 
-    function retryCurrentStage() {
-      const gameNum = (currentStage - 1) * 3 + currentStageDetail;
-      initializeGame(gameNum);
-      startTimer();
-      lucide.createIcons();
-    }
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => {
+      const title = config.page_title || defaultConfig.page_title;
+      document.getElementById('main-title').textContent = title;
+      document.getElementById('app').style.backgroundColor = config.background_color || defaultConfig.background_color;
+      const font = config.font_family || defaultConfig.font_family;
+      document.body.style.fontFamily = `${font}, sans-serif`;
+    },
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+        { get: () => config.header_color || defaultConfig.header_color, set: (v) => { config.header_color = v; window.elementSdk.setConfig({ header_color: v }); } },
+        { get: () => config.accent_color || defaultConfig.accent_color, set: (v) => { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } }
+      ],
+      borderables: [],
+      fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+      fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ['page_title', config.page_title || defaultConfig.page_title]
+    ])
+  });
 
-    function restartStage2() {
-      currentStage = 2;
-      currentStageDetail = 1;
-      lives = 3;
-      document.getElementById('lives-count').textContent = lives;
-      showStage(currentStage, currentStageDetail);
-      initializeGame(4);
-      lucide.createIcons();
-    }
-
-    function restartAll() {
-      currentStage = 1;
-      currentStageDetail = 1;
-      lives = 3;
-      document.getElementById('lives-count').textContent = lives;
-      document.getElementById('final-completion').classList.add('hidden');
-      showStage(currentStage, currentStageDetail);
-      initializeGame(1);
-      lucide.createIcons();
-    }
-
-    function onConfigChange(newConfig) {
-      for (let i = 1; i <= 6; i++) {
-        const titleEl = document.getElementById(`game${i}-title`);
-        const instrEl = document.getElementById(`game${i}-instruction`);
-        if (titleEl) titleEl.textContent = newConfig[`game${i}_title`] || defaultConfig[`game${i}_title`];
-        if (instrEl) instrEl.textContent = newConfig[`game${i}_instruction`] || defaultConfig[`game${i}_instruction`];
-      }
-    }
-
-    async function init() {
-      if (window.elementSdk) {
-        await window.elementSdk.init({
-          defaultConfig,
-          onConfigChange,
-          mapToCapabilities: () => ({ recolorables: [], borderables: [], fontEditable: undefined, fontSizeable: undefined }),
-          mapToEditPanelValues: (cfg) => new Map(Object.keys(defaultConfig).map(key => [key, cfg[key] || defaultConfig[key]]))
-        });
-        config = window.elementSdk.config;
-      }
-
-      initializeGame(1);
-      setupDropZones();
-
-      document.getElementById('next-stage-btn-1').addEventListener('click', goToNextStage);
-      document.getElementById('next-stage-btn-2').addEventListener('click', goToNextStage);
-      document.getElementById('next-stage-btn-3').addEventListener('click', goToNextStage);
-      document.getElementById('next-stage-btn-4').addEventListener('click', goToNextStage);
-      document.getElementById('next-stage-btn-5').addEventListener('click', goToNextStage);
-      document.getElementById('next-stage-btn-6').addEventListener('click', goToNextStage);
-      
-      document.getElementById('restart-stage-btn-4').addEventListener('click', restartStage);
-      document.getElementById('restart-stage-btn-5').addEventListener('click', restartStage);
-      document.getElementById('restart-stage-btn-6').addEventListener('click', restartStage);
-      
-      document.getElementById('restart-all-btn').addEventListener('click', restartAll);
-      
-      updateStageDisplay();
-      lucide.createIcons();
-    }
-
-    init();
-  </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e96bd70a6eaea0d',t:'MTc3NTcwODY0NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+  lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9faeca93319cea1f',t:'MTc3ODY0NTE5NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
